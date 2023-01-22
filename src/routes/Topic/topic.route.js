@@ -6,7 +6,7 @@ const router = Router();
 router.use(protected);
 router.post("/create", Topic.createATopic);
 router.get("/:topic_id", Topic.getATopic);
-router.patch("/pin-a-topic", Topic.pinATopic);
-router.patch("/answer-a-topic", Topic.answerATopic);
+router.patch("/pin-a-topic/:topic_id", Topic.pinATopic);
+router.patch("/answer-a-topic/:topic_id", Topic.answerATopic);
 
 module.exports = router;

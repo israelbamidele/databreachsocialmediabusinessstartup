@@ -39,11 +39,12 @@ exports.createATopic = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
+    topic: newTopic,
   });
 });
 
 exports.pinATopic = catchAsync(async (req, res, next) => {
-  const topic = await topic.findById(req.params.topic_id);
+  const topic = await Topic.findById(req.params.topic_id);
 
   const alreadtPinned = topic.pins.find((user) => {
     return (user = req.user.id);
@@ -54,6 +55,11 @@ exports.pinATopic = catchAsync(async (req, res, next) => {
 
   topic.pins.push(req.user.id);
   await topic.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Topic pinned",
+  });
 });
 
 exports.answerATopic = catchAsync(async (req, res, next) => {
@@ -65,9 +71,11 @@ exports.answerATopic = catchAsync(async (req, res, next) => {
     content: answer,
     replied_by: user.id,
   });
+  await topic.save();
 
   res.status(201).json({
     success: true,
+    answer,
   });
 });
 
