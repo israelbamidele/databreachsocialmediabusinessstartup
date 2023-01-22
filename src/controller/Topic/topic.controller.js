@@ -79,6 +79,35 @@ exports.answerATopic = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getAllTopicOnForum = catchAsync(async (req, res, next) => {
+  const { forum_name } = req.body;
+  const Currentuser = req.user;
+
+  const forum = await Forum.findOne({ name: forum_name }).populate({
+    path: "topics",
+    select: "topic answer pins uploader forum createdAt ",
+    populate: "uploader",
+  });
+  if (!forum) {
+    return next(new AppError("Forum does not exist", 404));
+  }
+  console.log(forum);
+  if (
+    !forum.enrolled.find((user) => {
+      return (user = Currentuser.id);
+    })
+  ) {
+    return next(new AppError("You are not enrolled in this forum", 403));
+  }
+
+  const topics = forum.topics;
+
+  res.status(200).json({
+    success: true,
+    topics,
+  });
+});
+
 exports.getATopic = catchAsync(async (req, res, next) => {
   const { topic_id } = req.params;
 
