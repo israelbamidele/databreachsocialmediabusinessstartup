@@ -85,13 +85,12 @@ exports.getAllTopicOnForum = catchAsync(async (req, res, next) => {
 
   const forum = await Forum.findOne({ name: forum_name }).populate({
     path: "topics",
-    select: "topic answer pins uploader forum createdAt ",
+    select: "topic answer pins uploader forum replies createdAt ",
     populate: "uploader",
   });
   if (!forum) {
     return next(new AppError("Forum does not exist", 404));
   }
-  console.log(forum);
   if (
     !forum.enrolled.find((user) => {
       return (user = Currentuser.id);
@@ -119,5 +118,31 @@ exports.getATopic = catchAsync(async (req, res, next) => {
   res.status(200).json({
     success: true,
     topic,
+  });
+});
+
+exports.replyATopic = catchAsync(async (req, res, next) => {
+  const { topic_id } = req.params;
+  const { reply } = req.body;
+
+  const topic = await Topic.findById(topic_id).populate({
+    path: "uploader",
+    select: "firstName lastName middleName occupation photo",
+  });
+
+  if (!topic) {
+    return next(new AppError("Topic not found", 404));
+  }
+
+  topic.replies.push({
+    reply,
+    replied_by: req.user.id,
+  });
+
+  await topic.save();
+
+  res.status(200).json({
+    success: true,
+    data: { reply },
   });
 });
