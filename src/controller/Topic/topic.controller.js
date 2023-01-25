@@ -67,6 +67,9 @@ exports.answerATopic = catchAsync(async (req, res, next) => {
   const user = req.user;
   const topic = await Topic.findById(req.params.topic_id);
 
+  if (!topic) {
+    return next(new AppError("Not found", 404));
+  }
   topic.answer.push({
     content: answer,
     replied_by: user.id,
@@ -140,6 +143,7 @@ exports.replyATopic = catchAsync(async (req, res, next) => {
   });
 
   await topic.save();
+  console.log(topic);
 
   res.status(200).json({
     success: true,
