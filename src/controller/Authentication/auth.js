@@ -34,6 +34,9 @@ exports.signup = catchAsync(async (req, res, next) => {
     occupation,
   } = req.body;
 
+  if (await User.findOne({ email })) {
+    return next(new AppError("User already exist", 403));
+  }
   if (password !== confirmpassword) {
     new AppError("Passwords are not the same", 404);
   }
