@@ -150,3 +150,13 @@ exports.replyATopic = catchAsync(async (req, res, next) => {
     data: { reply },
   });
 });
+
+exports.getAllTopics = catchAsync(async (req, res, next) => {
+  const topics = await Topic.find();
+
+  res.status(200).json({
+    success: true,
+    range: topics.length,
+    topics,
+  });
+});

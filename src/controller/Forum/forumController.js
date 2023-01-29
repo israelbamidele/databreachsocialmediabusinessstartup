@@ -20,8 +20,20 @@ exports.createForum = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllForums = catchAsync(async (Req, res, next) => {
-  const forums = await Forum.find();
+exports.getAllForums = catchAsync(async (req, res, next) => {
+  let forums = await Forum.find();
+  const user = req.user;
+
+  let IsFollowing = false;
+
+  const newForum = forums.forEach((forum) => {
+    if (user.forums.includes(forum.id)) {
+      forum.following = true;
+    }
+  });
+
+  console.log("1", Object.keys(forum));
+  console.log("2", Object.values(forums));
 
   res.status(200).json({
     success: true,
@@ -83,6 +95,43 @@ exports.followAForum = catchAsync(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: `Now following ${forum.name}`,
+  });
+});
+
+exports.getForumsByHighEngagements = catchAsync(async (req, res, next) => {
+  const forums = await Forum.find()
+    .populate({
+      path: "discussion",
+      populate: {
+        path: "replies",
+        select: "-_id",
+      },
+    })
+    .populate({
+      path: "topics",
+      populate: {
+        path: "answer replies",
+      },
+    })
+    .populate("createdBy")
+    .populate({
+      path: "followers",
+      select: "firstname lastname middlename occupation photo",
+    });
+
+  forums.sort((a, b) => {
+    return b.discussion.length - a.discussion.length;
+  });
+  // forums.forEach((forum) => {
+  //   if (forums.enrolled.includes(req.user.id)) {
+  //     return (forums.following = true);
+  //   }
+  //   forums.following = false;
+  // });
+
+  res.status(200).json({
+    success: true,
+    forums,
   });
 });
 

@@ -6,7 +6,7 @@ const catchAsync = require("../../utils/catchAsync");
 
 exports.createADiscussion = catchAsync(async (req, res, next) => {
   const user = req.user;
-  const { content, forum_name } = req.body;
+  const { content, forum_name, image } = req.body;
 
   const forum = await Forum.findOne({ name: forum_name });
 

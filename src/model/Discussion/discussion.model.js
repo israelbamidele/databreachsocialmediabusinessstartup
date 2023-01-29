@@ -36,6 +36,9 @@ const discussionSchema = Schema({
       ref: "User",
     },
   ],
+  image: {
+    type: String,
+  },
 });
 
 const Discussion = model("Discussion", discussionSchema);
