@@ -19,6 +19,9 @@ const forumSchema = Schema({
       unique: [true, "You are already enrolled in this"],
     },
   ],
+  description: {
+    type: String,
+  },
   photo: {
     tpye: String,
   },

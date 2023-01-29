@@ -3,13 +3,14 @@ const catchAsync = require("../../utils/catchAsync");
 const AppError = require("../../utils/appError");
 
 exports.createForum = catchAsync(async (req, res, next) => {
-  const { photo, name } = req.body;
+  const { photo, name, description } = req.body;
   const user = req.user;
 
   const forum = await Forum.create({
     name,
     photo,
     createdBy: user.id,
+    description,
   });
 
   user.forums.push(forum.id);
@@ -24,27 +25,22 @@ exports.getAllForums = catchAsync(async (req, res, next) => {
   let forums = await Forum.find();
   const user = req.user;
 
-  Object.values(forums).forEach((forum) => {
-    const newObject = Object.create(forum);
+  const newForumObj = forums.map((forum) => {
+    const newForum = { ...forum._doc };
 
-    Object.defineProperty(newObject, "isFollowing", {
-      value: false,
-      writable: true,
-    });
-    console.log(newObject);
+    newForum.isFollowing = false;
 
-    if (user.forums.includes(forum.id)) {
-      forum.isFollowing = true;
+    if (user.forums.includes(newForum._id)) {
+      newForum.isFollowing = true;
     }
-    // console.log(forum.isFollowing);
-  });
 
-  // console.log("2", Object.values(forums));
+    return newForum;
+  });
 
   res.status(200).json({
     success: true,
     range: forums.length,
-    forums,
+    forums: newForumObj,
   });
 });
 
@@ -105,6 +101,7 @@ exports.followAForum = catchAsync(async (req, res, next) => {
 });
 
 exports.getForumsByHighEngagements = catchAsync(async (req, res, next) => {
+  const user = req.user;
   const forums = await Forum.find()
     .populate({
       path: "discussion",
@@ -128,16 +125,22 @@ exports.getForumsByHighEngagements = catchAsync(async (req, res, next) => {
   forums.sort((a, b) => {
     return b.discussion.length - a.discussion.length;
   });
-  // forums.forEach((forum) => {
-  //   if (forums.enrolled.includes(req.user.id)) {
-  //     return (forums.following = true);
-  //   }
-  //   forums.following = false;
-  // });
+
+  const newForumObj = forums.map((forum) => {
+    const newForum = { ...forum._doc };
+
+    newForum.isFollowing = false;
+
+    if (user.forums.includes(newForum._id)) {
+      newForum.isFollowing = true;
+    }
+
+    return newForum;
+  });
 
   res.status(200).json({
     success: true,
-    forums,
+    forums: newForumObj,
   });
 });
 

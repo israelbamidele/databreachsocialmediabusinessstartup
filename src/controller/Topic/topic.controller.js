@@ -152,11 +152,34 @@ exports.replyATopic = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllTopics = catchAsync(async (req, res, next) => {
-  const topics = await Topic.find();
+  const topics = await Topic.find().p;
 
   res.status(200).json({
     success: true,
     range: topics.length,
+    topics,
+  });
+});
+
+exports.getTopicByHighPin = catchAsync(async (req, res, next) => {
+  const topics = await Topic.find()
+    .populate({
+      path: "uploader",
+      select: "firstName lastName middleName occupation photo",
+    })
+    .populate({
+      path: "answer",
+    })
+    .populate({
+      path: "replies",
+    });
+
+  topics.sort((a, b) => {
+    return b.pins.length - a.pins.length;
+  });
+
+  res.status(200).json({
+    success: true,
     topics,
   });
 });
