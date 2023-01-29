@@ -24,16 +24,22 @@ exports.getAllForums = catchAsync(async (req, res, next) => {
   let forums = await Forum.find();
   const user = req.user;
 
-  let IsFollowing = false;
+  Object.values(forums).forEach((forum) => {
+    const newObject = Object.create(forum);
 
-  const newForum = forums.forEach((forum) => {
+    Object.defineProperty(newObject, "isFollowing", {
+      value: false,
+      writable: true,
+    });
+    console.log(newObject);
+
     if (user.forums.includes(forum.id)) {
-      forum.following = true;
+      forum.isFollowing = true;
     }
+    // console.log(forum.isFollowing);
   });
 
-  console.log("1", Object.keys(forum));
-  console.log("2", Object.values(forums));
+  // console.log("2", Object.values(forums));
 
   res.status(200).json({
     success: true,

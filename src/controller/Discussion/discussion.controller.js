@@ -77,6 +77,20 @@ exports.getDiscussionOnForum = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getDiscussionByRetweets = catchAsync(async (req, res, next) => {
+  const discussioms = await Discussion.find().populate("replies uploader");
+
+  console.log(discussioms);
+  discussioms.sort((a, b) => {
+    return b.retweet.length - a.retweet.length;
+  });
+
+  res.status(200).json({
+    success: true,
+    discussioms,
+  });
+});
+
 exports.commentOnDiscussion = catchAsync(async (req, res, next) => {
   const { comment } = req.body;
   const user = req.user;
