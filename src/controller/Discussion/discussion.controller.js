@@ -6,7 +6,7 @@ const catchAsync = require("../../utils/catchAsync");
 
 exports.createADiscussion = catchAsync(async (req, res, next) => {
   const user = req.user;
-  const { content, forum_name, image, description } = req.body;
+  const { content, forum_name, image } = req.body;
 
   const forum = await Forum.findOne({ name: forum_name });
 
@@ -18,7 +18,6 @@ exports.createADiscussion = catchAsync(async (req, res, next) => {
     content,
     forum: forum_name,
     uploader: user._id,
-    description,
   });
 
   const savedDiscussion = await discussion.save();

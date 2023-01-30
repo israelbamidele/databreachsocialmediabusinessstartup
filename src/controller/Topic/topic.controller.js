@@ -152,7 +152,7 @@ exports.replyATopic = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllTopics = catchAsync(async (req, res, next) => {
-  const topics = await Topic.find().p;
+  const topics = await Topic.find();
 
   res.status(200).json({
     success: true,
@@ -169,10 +169,19 @@ exports.getTopicByHighPin = catchAsync(async (req, res, next) => {
     })
     .populate({
       path: "answer",
+      populate: {
+        path: "replied_by",
+        select: "firstName lastName occupation photo middleName",
+      },
     })
     .populate({
       path: "replies",
-    });
+      populate: {
+        path: "replied_by",
+        select: "firstName lastName occupation photo middleName",
+      },
+    })
+    .select("-forum ");
 
   topics.sort((a, b) => {
     return b.pins.length - a.pins.length;

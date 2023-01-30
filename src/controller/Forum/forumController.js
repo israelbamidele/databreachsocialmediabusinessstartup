@@ -46,19 +46,47 @@ exports.getAllForums = catchAsync(async (req, res, next) => {
 
 exports.getAForum = catchAsync(async (req, res, next) => {
   const { name } = req.body;
+  const user = req.user;
+
   let forum;
+
   if (name) {
-    forum = await Forum.findOne({ name }).populate("createdBy").populate({
-      path: "followers",
-      select: "firstname lastname middlename occupation photo",
-    });
+    forum = await Forum.findOne({ name })
+      .populate("createdBy")
+      .populate({
+        path: "followers",
+        select: "firstname lastname middlename occupation photo",
+      })
+      .populate({
+        path: "discussion",
+      })
+      .populate({
+        path: "topics",
+      });
   } else {
     forum = await Forum.findById(req.params.forum_id)
       .populate("createdBy")
       .populate({
         path: "followers",
         select: "firstname lastname middlename occupation photo",
+      })
+      .populate({
+        path: "followers",
+        select: "firstname lastname middlename occupation photo",
+      })
+      .populate({
+        path: "discussion",
+      })
+      .populate({
+        path: "topics",
       });
+  }
+
+  const objForum = { ...forum._doc };
+  objForum.isFollowing = false;
+
+  if (user.forums.includes(forum.id)) {
+    objForum.isFollowing = true;
   }
 
   if (!forum) {
@@ -67,7 +95,7 @@ exports.getAForum = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    forum,
+    forum: objForum,
   });
 });
 
