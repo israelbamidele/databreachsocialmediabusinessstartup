@@ -9,6 +9,10 @@ const answerSchema = Schema({
     type: mongoose.Types.ObjectId,
     ref: "User",
   },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
 const replySchema = Schema({
@@ -19,6 +23,10 @@ const replySchema = Schema({
   reply: {
     type: String,
     required: [true, "Field cannot be empty"],
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
   },
 });
 
