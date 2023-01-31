@@ -12,6 +12,9 @@ const commentSchema = Schema({
 });
 
 const discussionSchema = Schema({
+  title: {
+    type: String,
+  },
   content: {
     type: String,
     required: [true, "A discussion must have content"],

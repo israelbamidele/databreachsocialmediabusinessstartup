@@ -6,7 +6,7 @@ const catchAsync = require("../../utils/catchAsync");
 
 exports.createADiscussion = catchAsync(async (req, res, next) => {
   const user = req.user;
-  const { content, forum_name, image } = req.body;
+  const { content, forum_name, image, title } = req.body;
 
   const forum = await Forum.findOne({ name: forum_name });
 
@@ -15,6 +15,7 @@ exports.createADiscussion = catchAsync(async (req, res, next) => {
   }
 
   const discussion = new Discussion({
+    title,
     content,
     forum: forum_name,
     uploader: user._id,
@@ -28,6 +29,7 @@ exports.createADiscussion = catchAsync(async (req, res, next) => {
   res.status(201).json({
     success: true,
     data: {
+      title,
       content,
       user,
     },
@@ -57,7 +59,7 @@ exports.getDiscussionOnForum = catchAsync(async (req, res, next) => {
 
   const forum = await Forum.findOne({ name: forum_name }).populate({
     path: "discussion",
-    select: "content uploader uploaded_on replies retweet forum",
+    select: "content uploader uploaded_on replies retweet title",
     populate: {
       path: "uploader",
       select: "firstName lastName occupation photo",

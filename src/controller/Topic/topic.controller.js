@@ -91,6 +91,7 @@ exports.getAllTopicOnForum = catchAsync(async (req, res, next) => {
     select: "topic answer pins uploader forum replies createdAt ",
     populate: "uploader",
   });
+
   if (!forum) {
     return next(new AppError("Forum does not exist", 404));
   }
