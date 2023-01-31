@@ -18,11 +18,12 @@ exports.createATopic = catchAsync(async (req, res, next) => {
     return next(new AppError("Forum does not exist", 400));
   }
 
-  if (
-    !forumExist.enrolled.find((user) => {
-      return (user = req.user.id);
-    })
-  ) {
+  const userInForum = forumExist.enrolled.filter((user) => {
+    return user == req.user.id;
+  });
+
+  console.log(userInForum);
+  if ((userInForum.length = 0)) {
     return next(new AppError("You are not enrolled in this forum", 400));
   }
 

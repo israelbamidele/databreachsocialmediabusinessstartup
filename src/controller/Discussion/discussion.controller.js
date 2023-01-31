@@ -14,7 +14,16 @@ exports.createADiscussion = catchAsync(async (req, res, next) => {
     return next(new AppError("Forum not found", 404));
   }
 
+  const userInForum = forum.enrolled.filter((user) => {
+    return user == req.user.id;
+  });
+
+  if (userInForum.length < 1) {
+    return next(new AppError("You are not enrolled in this forum", 400));
+  }
+
   const discussion = new Discussion({
+    image,
     title,
     content,
     forum: forum_name,
@@ -29,6 +38,7 @@ exports.createADiscussion = catchAsync(async (req, res, next) => {
   res.status(201).json({
     success: true,
     data: {
+      image,
       title,
       content,
       user,
@@ -59,7 +69,7 @@ exports.getDiscussionOnForum = catchAsync(async (req, res, next) => {
 
   const forum = await Forum.findOne({ name: forum_name }).populate({
     path: "discussion",
-    select: "content uploader uploaded_on replies retweet title",
+    select: "content uploader uploaded_on replies retweet title image",
     populate: {
       path: "uploader",
       select: "firstName lastName occupation photo",
@@ -99,6 +109,10 @@ exports.commentOnDiscussion = catchAsync(async (req, res, next) => {
   const { discussion_id } = req.params;
   // GETTING THE DISCUSSION DOCUMENT
   const discussion = await Discussion.findById(discussion_id);
+
+  if (!discussion) {
+    return next(new AppError("Content not found", 404));
+  }
 
   // ADDING THE COMMENT
 

@@ -16,14 +16,13 @@ const forumSchema = Schema({
     {
       type: mongoose.Types.ObjectId,
       ref: "User",
-      unique: [true, "You are already enrolled in this"],
     },
   ],
   description: {
     type: String,
   },
   photo: {
-    tpye: String,
+    type: String,
   },
   createdAt: {
     type: Date,

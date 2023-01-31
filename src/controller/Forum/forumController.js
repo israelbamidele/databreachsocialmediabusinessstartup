@@ -6,13 +6,18 @@ exports.createForum = catchAsync(async (req, res, next) => {
   const { photo, name, description } = req.body;
   const user = req.user;
 
-  const forum = await Forum.create({
+  if (await Forum.findOne({ name })) {
+    return next(new AppError("Forum already exists", 400));
+  }
+
+  const forum = new Forum({
     name,
     photo,
     createdBy: user.id,
     description,
   });
 
+  await forum.save();
   user.forums.push(forum.id);
 
   res.status(201).json({
@@ -22,7 +27,10 @@ exports.createForum = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllForums = catchAsync(async (req, res, next) => {
-  let forums = await Forum.find();
+  let forums = await Forum.find().populate({
+    path: "createdBy",
+    select: "firstName lastName middleName photo occupation",
+  });
   const user = req.user;
 
   const newForumObj = forums.map((forum) => {
@@ -82,15 +90,15 @@ exports.getAForum = catchAsync(async (req, res, next) => {
       });
   }
 
+  if (!forum) {
+    return next(new AppError("Forum with the name does not exist", 404));
+  }
+
   const objForum = { ...forum._doc };
   objForum.isFollowing = false;
 
   if (user.forums.includes(forum.id)) {
     objForum.isFollowing = true;
-  }
-
-  if (!forum) {
-    return next(new AppError("Forum with the name does not exist", 404));
   }
 
   res.status(200).json({
