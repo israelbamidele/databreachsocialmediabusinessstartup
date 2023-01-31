@@ -10,10 +10,9 @@ exports.createATopic = catchAsync(async (req, res, next) => {
     select: "name followers enrolled photo",
   });
 
-  const forumExist = await Forum.findOne({ name: forum }).populate(
-    "enrolled",
-    "id"
-  );
+  const forumExist = await Forum.findOne({ name: forum })
+    .populate("enrolled", "id")
+    .select("+topics");
 
   if (!forumExist) {
     return next(new AppError("Forum does not exist", 400));
