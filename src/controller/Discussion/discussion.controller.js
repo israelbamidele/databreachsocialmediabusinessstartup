@@ -54,13 +54,13 @@ exports.getDiscussion = catchAsync(async (req, res, next) => {
     discussion = await Discussion.findById(id)
       .populate({
         path: "uploader",
-        select: "firstName lastName middleName occupation photo",
+        // select: "firstName lastName middleName occupation photo",
       })
       .populate({
         path: "replies",
         populate: {
-          path: "replied_by",
-          select: "firstName lastName middleName occuption photo",
+          path: "uploaded_by",
+          // select: "firstName lastName occupation middleName photo",
           option: {
             sort: { createdAt: -1 },
           },
