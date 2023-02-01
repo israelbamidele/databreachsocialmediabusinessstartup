@@ -181,7 +181,6 @@ exports.replyATopic = catchAsync(async (req, res, next) => {
   });
 
   await topic.save();
-  console.log(topic);
 
   res.status(200).json({
     success: true,

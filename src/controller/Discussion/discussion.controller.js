@@ -163,10 +163,12 @@ exports.commentOnDiscussion = catchAsync(async (req, res, next) => {
     uploaded_by: user.id,
   });
 
+  await discussion.save();
+
   res.status(201).json({
     success: true,
-    reply: {
-      discussion,
+    data: {
+      comment: discussion.replies,
     },
   });
 });
