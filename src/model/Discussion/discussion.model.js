@@ -5,7 +5,7 @@ const commentSchema = Schema({
     type: String,
     required: [true, "A comment must have a content"],
   },
-  uploaded_by: {
+  replied_by: {
     type: mongoose.Types.ObjectId,
     ref: "User",
   },

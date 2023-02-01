@@ -59,7 +59,7 @@ exports.getDiscussion = catchAsync(async (req, res, next) => {
       .populate({
         path: "replies",
         populate: {
-          path: "uploaded_by",
+          path: "replied_by",
           // select: "firstName lastName occupation middleName photo",
           option: {
             sort: { createdAt: -1 },
@@ -90,7 +90,7 @@ exports.getDiscussionOnForum = catchAsync(async (req, res, next) => {
     },
     populate: {
       path: "replies",
-      populate: "uploaded_by",
+      populate: "replied_by",
       select: "firstName lastName middleName occupation photo",
       options: {
         sort: { createdAt: 1 },
@@ -119,7 +119,7 @@ exports.getDiscussionByRetweets = catchAsync(async (req, res, next) => {
     })
     .populate({
       path: "replies",
-      populate: "uploaded_by",
+      populate: "replied_by",
       select: "firstName lastName middleName occupation photo",
       option: {
         sort: { createdAt: -1 },
@@ -144,7 +144,7 @@ exports.commentOnDiscussion = catchAsync(async (req, res, next) => {
   const discussion = await Discussion.findById(discussion_id).populate({
     path: "replies",
     populate: {
-      path: "uploaded_by",
+      path: "replied_by",
       select: "firstName lastName middleName occupation photo",
     },
     option: {
@@ -160,7 +160,7 @@ exports.commentOnDiscussion = catchAsync(async (req, res, next) => {
 
   discussion.replies.unshift({
     content: comment,
-    uploaded_by: user.id,
+    replied_by: user.id,
   });
 
   await discussion.save();
