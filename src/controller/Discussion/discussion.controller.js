@@ -115,7 +115,7 @@ exports.getDiscussionByRetweets = catchAsync(async (req, res, next) => {
   const discussioms = await Discussion.find()
     .populate({
       path: "uploader",
-      select: "firstName lastName middleName occupation photo",
+      select: "firstName lastName middleName occupation photo ",
     })
     .populate({
       path: "replies",
