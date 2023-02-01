@@ -112,9 +112,20 @@ exports.getDiscussionOnForum = catchAsync(async (req, res, next) => {
 });
 
 exports.getDiscussionByRetweets = catchAsync(async (req, res, next) => {
-  const discussioms = await Discussion.find().populate("replies uploader");
+  const discussioms = await Discussion.find()
+    .populate({
+      path: "uploader",
+      select: "firstName lastName middleName occupation photo",
+    })
+    .populate({
+      path: "replies",
+      populate: "uploaded_by",
+      select: "firstName lastName middleName occupation photo",
+      option: {
+        sort: { createdAt: -1 },
+      },
+    });
 
-  console.log(discussioms);
   discussioms.sort((a, b) => {
     return b.retweet.length - a.retweet.length;
   });
@@ -152,26 +163,10 @@ exports.commentOnDiscussion = catchAsync(async (req, res, next) => {
     uploaded_by: user.id,
   });
 
-  await discussion.save();
   res.status(201).json({
     success: true,
     reply: {
       discussion,
-    },
-  });
-});
-
-exports.getCommentsOnDiscussion = catchAsync(async (req, res, next) => {
-  const { discussion_id } = req.params;
-
-  const discussiom = await Discussion.findById(discussion_id).populate({
-    path: "replies",
-    populate: {
-      path: "uploaded_by",
-      select: "firstName lastName middleName occupation photo",
-    },
-    option: {
-      sort: { createdAt: -1 },
     },
   });
 });
