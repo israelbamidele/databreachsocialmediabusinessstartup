@@ -117,11 +117,11 @@ exports.followAForum = catchAsync(async (req, res, next) => {
     return next(new AppError("Forum does not exist", 404));
   }
 
-  if (
-    forum.enrolled.find((user) => {
-      return (user = req.user.id);
-    })
-  ) {
+  const userInForum = forum.enrolled.find((currentUser) => {
+    return currentUser == req.user.id;
+  });
+  console.log(userInForum);
+  if (userInForum) {
     return next(new AppError("You are already enrolled in this forum", 400));
   }
 

@@ -65,23 +65,33 @@ exports.pinATopic = catchAsync(async (req, res, next) => {
 exports.answerATopic = catchAsync(async (req, res, next) => {
   const { answer } = req.body;
   const user = req.user;
-  const topic = await Topic.findById(req.params.topic_id);
+  const topic = await Topic.findById(req.params.topic_id).populate({
+    path: "answer",
+    populate: "replied_by",
+    select: "firstName lastName middleName occupation photo",
+  });
 
   if (!topic) {
     return next(new AppError("Not found", 404));
   }
-  topic.answer.push({
+  topic.answer.unshift({
     content: answer,
     replied_by: user.id,
   });
+
   await topic.save();
 
+  topic.answer.sort((a, b) => {
+    return b.createdAt - a.createdAt;
+  });
   res.status(201).json({
     success: true,
-    answer,
+
+    data: {
+      answer: topic.answer,
+    },
   });
 });
-
 exports.getAllTopicOnForum = catchAsync(async (req, res, next) => {
   const { forum_name } = req.body;
   const Currentuser = req.user;
@@ -114,10 +124,31 @@ exports.getAllTopicOnForum = catchAsync(async (req, res, next) => {
 exports.getATopic = catchAsync(async (req, res, next) => {
   const { topic_id } = req.params;
 
-  const topic = await Topic.findById(topic_id).populate({
-    path: "uploader",
-    select: "firstName lastName middleName occupation photo",
-  });
+  const topic = await Topic.findById(topic_id)
+    .populate({
+      path: "uploader",
+      select: "firstName lastName middleName occupation photo",
+    })
+    .populate({
+      path: "answer",
+      populate: {
+        path: "replied_by",
+        select: "firstName lastName middleName occuption photo",
+      },
+      option: {
+        sort: { createdAt: -1 },
+      },
+    })
+    .populate({
+      path: "replies",
+      populate: {
+        path: "replied_by",
+        select: "firstName lastName middleName occuption photo",
+        option: {
+          sort: { createdAt: -1 },
+        },
+      },
+    });
 
   res.status(200).json({
     success: true,
@@ -129,16 +160,22 @@ exports.replyATopic = catchAsync(async (req, res, next) => {
   const { topic_id } = req.params;
   const { reply } = req.body;
 
-  const topic = await Topic.findById(topic_id).populate({
-    path: "uploader",
-    select: "firstName lastName middleName occupation photo",
-  });
+  const topic = await Topic.findById(topic_id)
+    .populate({
+      path: "uploader",
+      select: "firstName lastName middleName occupation photo",
+    })
+    .populate({
+      path: "replies",
+      populate: "replied_by",
+      select: "firstName lastName middleName occupation photo",
+    });
 
   if (!topic) {
     return next(new AppError("Topic not found", 404));
   }
 
-  topic.replies.push({
+  topic.replies.unshift({
     reply,
     replied_by: req.user.id,
   });
@@ -148,7 +185,7 @@ exports.replyATopic = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    data: { reply },
+    data: { reply: topic.replies },
   });
 });
 
@@ -174,12 +211,18 @@ exports.getTopicByHighPin = catchAsync(async (req, res, next) => {
         path: "replied_by",
         select: "firstName lastName occupation photo middleName",
       },
+      option: {
+        sort: { createdAt: -1 },
+      },
     })
     .populate({
       path: "replies",
       populate: {
         path: "replied_by",
         select: "firstName lastName occupation photo middleName",
+      },
+      option: {
+        sort: { createdAt: -1 },
       },
     })
     .select("-forum ");

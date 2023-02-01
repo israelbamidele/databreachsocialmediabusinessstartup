@@ -76,7 +76,13 @@ exports.protected = catchAsync(async (req, res, next) => {
     return next(new AppError("Invalid token", 400));
   }
 
-  const currentUser = await User.findById(userDecode).select("+password");
+  const currentUser = await User.findById(userDecode)
+    .select("+password")
+    .populate({
+      path: "forums",
+      select: "-_id -__v",
+    });
+
   if (!currentUser) {
     return next(new AppError("User not found, please sign in", 404));
   }

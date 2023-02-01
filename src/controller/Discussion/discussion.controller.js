@@ -51,7 +51,21 @@ exports.getDiscussion = catchAsync(async (req, res, next) => {
 
   let discussion;
   if (id) {
-    discussion = await Discussion.findById(id).populate("replies uploader");
+    discussion = await Discussion.findById(id)
+      .populate({
+        path: "uploader",
+        select: "firstName lastName middleName occupation photo",
+      })
+      .populate({
+        path: "replies",
+        populate: {
+          path: "replied_by",
+          select: "firstName lastName middleName occuption photo",
+          option: {
+            sort: { createdAt: -1 },
+          },
+        },
+      });
   }
 
   if (!discussion) {
@@ -73,6 +87,14 @@ exports.getDiscussionOnForum = catchAsync(async (req, res, next) => {
     populate: {
       path: "uploader",
       select: "firstName lastName occupation photo",
+    },
+    populate: {
+      path: "replies",
+      populate: "uploaded_by",
+      select: "firstName lastName middleName occupation photo",
+      options: {
+        sort: { createdAt: 1 },
+      },
     },
   });
 
@@ -108,7 +130,16 @@ exports.commentOnDiscussion = catchAsync(async (req, res, next) => {
   const user = req.user;
   const { discussion_id } = req.params;
   // GETTING THE DISCUSSION DOCUMENT
-  const discussion = await Discussion.findById(discussion_id);
+  const discussion = await Discussion.findById(discussion_id).populate({
+    path: "replies",
+    populate: {
+      path: "uploaded_by",
+      select: "firstName lastName middleName occupation photo",
+    },
+    option: {
+      sort: { createdAt: -1 },
+    },
+  });
 
   if (!discussion) {
     return next(new AppError("Content not found", 404));
@@ -116,7 +147,7 @@ exports.commentOnDiscussion = catchAsync(async (req, res, next) => {
 
   // ADDING THE COMMENT
 
-  discussion.replies.push({
+  discussion.replies.unshift({
     content: comment,
     uploaded_by: user.id,
   });
@@ -124,7 +155,24 @@ exports.commentOnDiscussion = catchAsync(async (req, res, next) => {
   await discussion.save();
   res.status(201).json({
     success: true,
-    content: comment,
+    reply: {
+      discussion,
+    },
+  });
+});
+
+exports.getCommentsOnDiscussion = catchAsync(async (req, res, next) => {
+  const { discussion_id } = req.params;
+
+  const discussiom = await Discussion.findById(discussion_id).populate({
+    path: "replies",
+    populate: {
+      path: "uploaded_by",
+      select: "firstName lastName middleName occupation photo",
+    },
+    option: {
+      sort: { createdAt: -1 },
+    },
   });
 });
 

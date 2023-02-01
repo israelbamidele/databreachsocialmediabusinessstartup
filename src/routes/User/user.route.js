@@ -4,7 +4,7 @@ const { protected } = require("../../controller/Authentication/auth");
 
 const router = Router();
 router.use(protected);
-router.post("/:user_id", UserController.getAUser);
-router.post("/me", UserController.getCurrentUser);
+router.get("/me", UserController.getCurrentUser);
+router.get("/:user_id", UserController.getAUser);
 
 module.exports = router;

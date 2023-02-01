@@ -9,6 +9,10 @@ const commentSchema = Schema({
     type: mongoose.Types.ObjectId,
     ref: "User",
   },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
 const discussionSchema = Schema({
