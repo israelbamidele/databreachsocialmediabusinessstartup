@@ -36,13 +36,18 @@ exports.getAllForums = catchAsync(async (req, res, next) => {
   const newForumObj = forums.map((forum) => {
     const newForum = { ...forum._doc };
 
-    newForum.isFollowing = false;
-
-    if (user.forums.includes(newForum._id)) {
-      newForum.isFollowing = true;
-    }
-
     return newForum;
+  });
+
+  newForumObj.forEach((forum) => {
+    const current = forum.enrolled.filter((cUser) => {
+      return cUser == user.id;
+    });
+    if (current.length < 1) {
+      forum.isFollowing = false;
+    } else {
+      forum.isFollowing = true;
+    }
   });
 
   res.status(200).json({
