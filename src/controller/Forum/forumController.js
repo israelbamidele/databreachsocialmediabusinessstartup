@@ -84,10 +84,6 @@ exports.getAForum = catchAsync(async (req, res, next) => {
         select: "firstname lastname middlename occupation photo",
       })
       .populate({
-        path: "followers",
-        select: "firstname lastname middlename occupation photo",
-      })
-      .populate({
         path: "discussion",
       })
       .populate({
@@ -101,15 +97,14 @@ exports.getAForum = catchAsync(async (req, res, next) => {
 
   const objForum = { ...forum._doc };
 
-  newForumObj.forEach((forum) => {
-    const current = forum.enrolled.filter((cUser) => {
-      return cUser == user.id;
-    });
-    if (current.length < 1) {
-      forum.isFollowing = false;
+  console.log(objForum);
+  objForum.enrolled.forEach((forum) => {
+    if (forum == user.id) {
+      objForum.isFollowing = true;
     } else {
-      forum.isFollowing = true;
+      objForum.isFollowing = false;
     }
+
   });
 
   res.status(200).json({
