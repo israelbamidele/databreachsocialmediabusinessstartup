@@ -39,16 +39,18 @@ exports.getAllForums = catchAsync(async (req, res, next) => {
     return newForum;
   });
 
-  newForumObj.forEach((forum) => {
-    const current = forum.enrolled.filter((cUser) => {
-      return cUser == user.id;
+  if (user) {
+    newForumObj.forEach((forum) => {
+      const current = forum.enrolled.filter((cUser) => {
+        return cUser == user.id;
+      });
+      if (current.length < 1) {
+        forum.isFollowing = false;
+      } else {
+        forum.isFollowing = true;
+      }
     });
-    if (current.length < 1) {
-      forum.isFollowing = false;
-    } else {
-      forum.isFollowing = true;
-    }
-  });
+  }
 
   res.status(200).json({
     success: true,
@@ -96,16 +98,15 @@ exports.getAForum = catchAsync(async (req, res, next) => {
   }
 
   const objForum = { ...forum._doc };
-
-  console.log(objForum);
-  objForum.enrolled.forEach((forum) => {
-    if (forum == user.id) {
-      objForum.isFollowing = true;
-    } else {
-      objForum.isFollowing = false;
-    }
-
-  });
+  if (user) {
+    objForum.enrolled.forEach((forum) => {
+      if (forum == user.id) {
+        objForum.isFollowing = true;
+      } else {
+        objForum.isFollowing = false;
+      }
+    });
+  }
 
   res.status(200).json({
     success: true,
@@ -140,6 +141,26 @@ exports.followAForum = catchAsync(async (req, res, next) => {
     success: true,
     message: `Now following ${forum.name}`,
   });
+});
+
+exports.unfollowAForum = catchAsync(async (req, res, next) => {
+  const name = req.body.name;
+  const user = req.user;
+
+  const forum = await Forum.findOne({ name });
+  if (!forum) {
+    return next(new AppError("Forum not found", 200));
+  }
+
+  const userIndex = forum.enrolled.indexOf(user._id);
+  if (userIndex < 0) {
+    return next(new AppError("User not enrolled in forum", 400));
+  }
+
+  forum.enrolled.splice(userIndex, 1);
+  await forum.save();
+
+  res.status(204).json({});
 });
 
 exports.getForumsByHighEngagements = catchAsync(async (req, res, next) => {
